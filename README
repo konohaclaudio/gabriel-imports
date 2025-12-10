@@ -1,0 +1,114 @@
+
+💈 Gabriel Imports: Barbearia & Streetwear E-commerce
+<p align="center">
+<img src="./public/assets/img/logosombra.png" alt="Logo Principal do Projeto Gabriel Imports" width="400"/>
+</p>
+O Gabriel Imports é uma plataforma web que integra um catálogo de produtos E-commerce (Streetwear) com um sistema de agendamento e gerenciamento de serviços de barbearia. O projeto foi desenvolvido com uma arquitetura PHP nativa otimizada para performance e manutenibilidade.
+🌟 Destaques do Projeto
+Identidade Visual: Tema Dark & Gold (#C8A165) com foco em luxo e estilo moderno.
+Conversão: Checkout simplificado via WhatsApp.
+Gerenciamento Dinâmico: Matriz de preços por barbeiro.
+💻 Tecnologias Utilizadas
+Categoria
+Tecnologia
+Versão Mínima
+Backend
+PHP Nativo
+7.4+
+Banco de Dados
+MySQL / MariaDB
+5.7+
+Frontend
+Tailwind CSS
+3.x
+Ícones
+Lucide Icons
+CDN
+
+🏗️ Arquitetura do Sistema
+O projeto adota um padrão MVC Simplificado (Model-View-Controller) com roteamento manual centralizado.
+Componente
+Localização
+Responsabilidade
+Roteador
+public/index.php
+Analisa a URL e direciona a requisição para o Controller apropriado (Ex: /loja vai para SiteController::loja()).
+Controllers
+app/Controllers/
+Gerenciam o fluxo, lógica de sessão (Ex: AuthController para login), e buscam dados nos Models.
+Models
+app/Models/
+Interação pura com o banco de dados (Ex: Barbeiro.php gerencia o CRUD e a matriz de preços).
+Views
+app/Views/
+Renderização do HTML e apresentação dos dados.
+
+⚙️ Funcionalidades Principais
+Área Pública (Frontend)
+Página Inicial (/): Apresentação institucional, valores, equipe.
+Catálogo de Produtos (/loja): Grid de produtos paginado com filtros por categoria, preço e busca.
+Carrinho: Armazenamento via Local Storage.
+Checkout Rápido: Geração de mensagem formatada para WhatsApp para finalização da compra.
+Equipe: Exibição dos barbeiros e agendamento direto via link WhatsApp.
+Área Administrativa (Backend)
+Módulo
+Rota
+Funcionalidade
+Controller Relacionado
+Autenticação
+/login
+Acesso seguro ao painel com verificação de sessão.
+AuthController.php
+Dashboard
+/admin
+Visão geral dos KPIs (Estoque, Vendas).
+AdminController.php
+Barbeiros
+/barbeiros
+CRUD completo para gerenciar a equipe.
+BarbeiroController.php
+Tabela de Preços
+/barbeiros/precos/{id}
+Definição de preços customizados por barbeiro (Matriz M:M).
+BarbeiroController.php
+
+🚀 Como Executar o Projeto Localmente
+Siga estas instruções para configurar o ambiente em sua máquina.
+1. Pré-requisitos
+Instale um ambiente de servidor local:
+Recomendado: Laragon (Mais simples para URLs amigáveis)
+Alternativa Padrão: XAMPP ou WAMP
+Certifique-se de que o Apache e o MySQL estejam em execução.
+2. Clonagem e Configuração
+Clone o Repositório:
+Bash
+git clone [URL_DO_SEU_REPOSITORIO] gabriel-imports
+
+
+Mova para a Raiz Web: Mova a pasta gabriel-imports para o diretório de documentos web do seu servidor (Ex: C:\xampp\htdocs\).
+Configurar Conexão: Edite o arquivo config/config.php para corresponder às credenciais do seu MySQL local:
+PHP
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'gabriel_imports_db'); // Use este nome
+define('DB_USER', 'root');
+define('DB_PASS', ''); 
+define('BASE_URL', 'http://localhost/gabriel-imports/public/'); 
+
+
+3. Configuração do Banco de Dados
+Crie o BD: Acesse o phpMyAdmin (http://localhost/phpmyadmin) e crie um banco de dados com o nome gabriel_imports_db.
+Importe: Importe o arquivo [nome-do-seu-arquivo].sql (o dump do seu banco de dados) para dentro do BD recém-criado.
+Atenção: Se não tiver o dump, use a ferramenta public/fix_login.php para garantir que a tabela admin_users exista e o usuário padrão seja criado.
+4. Acessos
+Site: Acesse http://localhost/gabriel-imports/public/
+Painel Admin: Acesse http://localhost/gabriel-imports/public/login
+Credencial
+Valor
+Email Admin
+admin@gabrielimports.com
+Senha Admin
+123
+
+🤝 Contribuições
+Sinta-se à vontade para contribuir com sugestões, reportar bugs ou propor melhorias de código.
+Desenvolvido por Claudio Santana (Portfólio)
