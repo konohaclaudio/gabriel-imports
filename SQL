@@ -1,0 +1,153 @@
+-- --------------------------------------------------------
+-- GABRIEL IMPORTS - BARBEARIA E E-COMMERCE
+-- SQL para criação e populamento das tabelas
+-- --------------------------------------------------------
+
+-- 1. CRIAÇÃO DO BANCO DE DADOS (EXECUTE APENAS SE NECESSÁRIO)
+CREATE DATABASE IF NOT EXISTS `gabriel_imports_db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `gabriel_imports_db`;
+
+-- --------------------------------------------------------
+-- Tabela de Usuários Administradores (Login/Sessão)
+-- Necessário para o AuthController e o acesso ao Painel.
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `admin_users` (
+  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nome` VARCHAR(100) NOT NULL,
+  `email` VARCHAR(100) NOT NULL UNIQUE,
+  `password_hash` VARCHAR(255) NOT NULL,
+  `criado_em` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Tabela de Categorias (Para Filtro de Produtos)
+-- Necessário para a loja.php e filtros.
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `categorias` (
+  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nome` VARCHAR(50) NOT NULL UNIQUE,
+  `slug` VARCHAR(60) NOT NULL UNIQUE,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Tabela de Produtos (E-commerce)
+-- Necessário para a loja.php e novidades na home.php.
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `produtos` (
+  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nome` VARCHAR(150) NOT NULL,
+  `descricao` TEXT NULL,
+  `preco` DECIMAL(10, 2) NOT NULL,
+  `preco_promo` DECIMAL(10, 2) NULL DEFAULT NULL,
+  `estoque` INT(11) NOT NULL DEFAULT 0,
+  `imagem_path` VARCHAR(255) NULL DEFAULT NULL,
+  `categoria_id` INT(11) UNSIGNED NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_produto_categoria` (`categoria_id`),
+  CONSTRAINT `fk_produto_categoria` FOREIGN KEY (`categoria_id`) REFERENCES `categorias` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Tabela de Barbeiros (Equipe)
+-- Necessário para o BarbeiroController.
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `barbeiros` (
+  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nome` VARCHAR(100) NOT NULL,
+  `apelido` VARCHAR(50) NOT NULL UNIQUE,
+  `especialidade` VARCHAR(100) NULL DEFAULT 'Cortes Modernos',
+  `telefone` VARCHAR(20) NULL,
+  `foto_path` VARCHAR(255) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Tabela Mestra de Serviços (Lista de Serviços Base)
+-- Necessário para a matriz de preços dinâmicos.
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `servicos` (
+  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nome` VARCHAR(100) NOT NULL UNIQUE,
+  `duracao_minutos` INT(4) NOT NULL DEFAULT 30,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Tabela Pivô: Preços Barbeiros (Matriz de Preços)
+-- Lógica M:M para preços dinâmicos por Barbeiro/Serviço.
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `precos_barbeiros` (
+  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `barbeiro_id` INT(11) UNSIGNED NOT NULL,
+  `servico_id` INT(11) UNSIGNED NOT NULL,
+  `valor` DECIMAL(10, 2) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_unico_barbeiro_servico` (`barbeiro_id`, `servico_id`),
+  CONSTRAINT `fk_pb_barbeiro` FOREIGN KEY (`barbeiro_id`) REFERENCES `barbeiros` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_pb_servico` FOREIGN KEY (`servico_id`) REFERENCES `servicos` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Tabela de Vendas (Para KPIs no Dashboard)
+-- Simples para fins de cálculo de faturamento no AdminController.
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `vendas` (
+  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `data_venda` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `valor_total` DECIMAL(10, 2) NOT NULL,
+  `tipo` ENUM('produto', 'servico') NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- --------------------------------------------------------
+-- DADOS INICIAIS (SEEDING)
+-- --------------------------------------------------------
+
+-- Usuário Admin (Senha "123" - use a ferramenta fix_login.php para garantir a hash correta)
+INSERT INTO `admin_users` (`nome`, `email`, `password_hash`) VALUES
+('Admin Supremo', 'admin@gabrielimports.com', '$2y$10$wN3H0K7XQ4vA8z2F0g3GzO5fQ6R7S8T9U0V1W2X3Y4Z5A6B7C8D9');
+
+-- Categorias de Produtos
+INSERT INTO `categorias` (`nome`, `slug`) VALUES
+('Streetwear', 'streetwear'),
+('Acessórios', 'acessorios'),
+('Cuidados', 'cuidados'),
+('Tênis', 'tenis');
+
+-- Barbeiros
+INSERT INTO `barbeiros` (`nome`, `apelido`, `especialidade`, `telefone`) VALUES
+('Gabriel Oliveira', 'gabriel_oliveira', 'Cortes e Barba Clássica', '14998676477'),
+('Matheus Silva', 'matheus_cuts', 'Degradê e Freestyle', '14999112233');
+
+-- Serviços Mestre
+INSERT INTO `servicos` (`nome`) VALUES
+('Corte Masculino'),
+('Corte e Barba'),
+('Barba Completa'),
+('Hidratação Capilar'),
+('Corte Infantil');
+
+-- Produtos de Exemplo (Para teste na Loja)
+INSERT INTO `produtos` (`nome`, `descricao`, `preco`, `preco_promo`, `estoque`, `imagem_path`, `categoria_id`) VALUES
+('Camiseta Oversized Black', 'Camiseta de algodão 30.1 penteado, modelagem larga.', 129.90, 99.90, 50, 'uploads/produtos/camiseta.jpg', 1),
+('Corrente Aço Inox Gold', 'Corrente minimalista em aço inox banhada a ouro.', 59.90, NULL, 15, 'uploads/produtos/corrente.jpg', 2),
+('Pomada Modeladora Matte', 'Efeito matte e alta fixação, ideal para cortes modernos.', 35.00, NULL, 70, 'uploads/produtos/pomada.jpg', 3),
+('Tenis Sneaker Importado', 'Tênis estilo esportivo, edição limitada.', 399.00, 349.00, 8, 'uploads/produtos/tenis.jpg', 4),
+('Perfume Gabriel Signature', 'Fragrância amadeirada exclusiva da casa.', 199.90, NULL, 25, 'uploads/produtos/perfume.jpg', 3);
+
+-- Preços Dinâmicos (Exemplo: Barbeiro Gabriel cobra 50 por Corte)
+-- Você deve implementar esta lógica de inserção inicial ou usar o painel Admin
+INSERT INTO `precos_barbeiros` (`barbeiro_id`, `servico_id`, `valor`)
+VALUES 
+(1, 1, 50.00), -- Gabriel cobra 50 por Corte Masculino
+(2, 1, 45.00), -- Matheus cobra 45 por Corte Masculino
+(1, 2, 85.00); -- Gabriel cobra 85 por Corte e Barba
+
+-- Vendas de Exemplo (Para Popular o Dashboard)
+INSERT INTO `vendas` (`valor_total`, `tipo`, `data_venda`) VALUES
+(99.90, 'produto', NOW()),
+(85.00, 'servico', DATE_SUB(NOW(), INTERVAL 1 DAY)),
+(129.90, 'produto', DATE_SUB(NOW(), INTERVAL 2 DAY));

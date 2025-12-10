@@ -1,0 +1,33 @@
+<?php
+// Arquivo: public/reset_admin.php
+require_once '../config/config.php';
+require_once '../app/Core/Database.php';
+
+use App\Core\Database;
+
+try {
+    $db = Database::getInstance();
+
+    // 1. Apaga o admin antigo (se existir) para não duplicar
+    $email = 'admin@gabrielimports.com';
+    $db->prepare("DELETE FROM admin_users WHERE email = ?")->execute([$email]);
+
+    // 2. Cria o novo admin com a senha '123'
+    $senha = '123';
+    $hash = password_hash($senha, PASSWORD_DEFAULT);
+    
+    $sql = "INSERT INTO admin_users (nome, email, password_hash) VALUES (?, ?, ?)";
+    $stmt = $db->prepare($sql);
+    $stmt->execute(['Chefão Claudio', $email, $hash]);
+
+    echo "<div style='font-family: sans-serif; text-align: center; margin-top: 50px;'>";
+    echo "<h1 style='color: green;'>✅ Usuário Admin Recriado!</h1>";
+    echo "<p><strong>Email:</strong> admin@gabrielimports.com</p>";
+    echo "<p><strong>Senha:</strong> 123</p>";
+    echo "<br><a href='" . BASE_URL . "login' style='background: #C8A165; color: black; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;'>Ir para Login</a>";
+    echo "</div>";
+
+} catch (Exception $e) {
+    echo "Erro: " . $e->getMessage();
+}
+?>
